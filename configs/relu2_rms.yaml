@@ -1,0 +1,2 @@
+norm_type: "rmsnorm"
+activation_type: "relu2"

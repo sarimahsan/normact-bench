@@ -1,0 +1,48 @@
+# Python Cache Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment & Jupyter Cache
+.env
+.venv
+env/
+venv/
+ENV/
+.ipynb_checkpoints/
+
+# Testing Cache
+.pytest_cache/
+temp_cache/
+.coverage
+htmlcov/
+
+# PyTorch Checkpoints & Weights
+*.pt
+*.pth
+*.ckpt
+*.bin
+
+# Project-Specific Results and Datasets
+transformer_research/results/
+results/
+dataset_cache/
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
