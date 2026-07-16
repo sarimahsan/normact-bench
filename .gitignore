@@ -46,3 +46,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.swp
+
+# Documentation & HTML research notes
+*.docx
+*.html
+transformer_research/

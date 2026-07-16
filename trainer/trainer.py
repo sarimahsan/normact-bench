@@ -76,7 +76,11 @@ class Trainer:
         if step > self.total_steps:
             return self.min_lr
             
-        decay_ratio = (step - self.warmup_steps) / (self.total_steps - self.warmup_steps)
+        denom = self.total_steps - self.warmup_steps
+        if denom <= 0:
+            decay_ratio = 1.0
+        else:
+            decay_ratio = (step - self.warmup_steps) / denom
         coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
         return self.min_lr + coeff * (self.max_lr - self.min_lr)
 
