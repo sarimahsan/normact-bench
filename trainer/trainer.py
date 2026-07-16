@@ -165,9 +165,6 @@ class Trainer:
                     self.global_step += 1
                     loss_val = loss.item() * self.grad_accum
 
-                    for callback in self.callbacks:
-                        callback.on_step_end(self, loss_val)
-
                     # Validation
                     if self.global_step % self.val_interval == 0 or self.global_step == self.total_steps:
                         val_loss = self.validate()
@@ -188,6 +185,9 @@ class Trainer:
                             callback.on_validation_end(self, val_loss)
 
                         self.model.train()
+
+                    for callback in self.callbacks:
+                        callback.on_step_end(self, loss_val)
 
                     if self.stop_training:
                         break

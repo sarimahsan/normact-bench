@@ -49,7 +49,7 @@ class LoggerCallback(Callback):
         self.step_start_time = time.time()
 
     def on_step_end(self, trainer, loss_val):
-        if trainer.global_step % self.log_interval == 0 or trainer.global_step == 1:
+        if trainer.global_step % self.log_interval == 0 or trainer.global_step == 1 or trainer.global_step == trainer.total_steps:
             step_duration = time.time() - self.step_start_time if self.step_start_time else 0.0
             
             # Compute tokens per second
@@ -311,7 +311,7 @@ class DiagnosticCallback(Callback):
                     self.hooks.append(module.register_forward_hook(make_hook(name)))
 
     def on_step_start(self, trainer):
-        self.should_log = (trainer.global_step % self.log_interval == 0)
+        self.should_log = (trainer.global_step % self.log_interval == 0 or trainer.global_step == trainer.total_steps)
         self.activation_stats.clear()
         
         # Save pre-update weights if logging this step to compute weight update ratios
