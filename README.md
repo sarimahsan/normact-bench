@@ -48,51 +48,58 @@ transformer_research/
 
 ## 🧱 Model Architecture & Pipeline Flow
 
-The research framework employs a configurable, decoder-only Transformer model. Below is a generic visualization of the full network pipeline and the internal structure of each Transformer block:
+The research framework employs a configurable, decoder-only Transformer model. To maximize readability, the architecture is broken down into the overall model pipeline and the detailed layout of an individual Transformer block:
 
+### 1. Overall Model Pipeline
 ```mermaid
 graph TD
-    %% Global styling
     classDef blockStyle fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
     classDef opStyle fill:#0f172a,stroke:#10b981,stroke-width:1px,color:#d1d5db;
     classDef flowStyle fill:#0f172a,stroke:#64748b,stroke-width:1px,color:#94a3b8;
 
-    subgraph Input_Stage ["Input Stage"]
-        Tokens["Token IDs (Batch, Seq)"] --> Embed["Embedding Layer"]
-        Embed --> H0["Hidden States (h_0)"]
-    end
-
-    subgraph Transformer_Blocks ["Transformer Blocks (x N Layers)"]
+    Input["Token IDs<br><i>(Batch, Seq)</i>"] --> Embed["Embedding Layer<br><i>(Vocab size → d_model)</i>"]
+    Embed --> H0["Hidden States (h_0)"]
+    
+    subgraph Blocks ["Transformer Layers Stack"]
         H0 --> Block1["Transformer Block 1"]
         Block1 --> Block2["Transformer Block 2"]
-        Block2 --> Dots["..."]
+        Block2 --> Dots["... (Repeat N Times)"]
         Dots --> BlockN["Transformer Block N (h_N)"]
     end
 
-    subgraph Output_Stage ["Output Stage"]
-        BlockN --> FinalNorm["Final Norm (LayerNorm / RMSNorm)"]
-        FinalNorm --> LMHead["LM Head (Linear)"]
-        LMHead --> Logits["Logits (Batch, Seq, Vocab)"]
-    end
+    BlockN --> FinalNorm["Final Normalization<br><i>(LayerNorm / RMSNorm)</i>"]
+    FinalNorm --> LMHead["LM Head (Linear)<br><i>(d_model → Vocab size)</i>"]
+    LMHead --> Logits["Logits<br><i>(Batch, Seq, Vocab)</i>"]
 
-    subgraph Detail_Block ["Transformer Block Detail (Pre-LN)"]
-        Input["Block Input (h_l)"] --> PreAttnNorm["Pre-Attention Normalization (LayerNorm / RMSNorm)"]
-        Input --> Residual1[("+ Add Residual")]
-        PreAttnNorm --> SelfAttn["Self-Attention (GQA + RoPE)"]
-        SelfAttn --> Residual1
-        
-        Residual1 --> PreFFNNorm["Pre-FFN Normalization (LayerNorm / RMSNorm)"]
-        Residual1 --> Residual2[("+ Add Residual")]
-        PreFFNNorm --> FFN["Feed-Forward Network (FFN / GLU variants)"]
-        FFN --> Residual2
-        
-        Residual2 --> Output["Block Output (h_l+1)"]
-    end
+    class Input,Logits,H0,BlockN flowStyle;
+    class Embed,LMHead blockStyle;
+    class FinalNorm opStyle;
+```
 
-    %% Apply Classes
-    class Tokens,Logits,H0,BlockN,Input,Output flowStyle;
-    class Embed,LMHead,SelfAttn,FFN blockStyle;
-    class FinalNorm,PreAttnNorm,PreFFNNorm,Residual1,Residual2 opStyle;
+### 2. Transformer Block Detail (Pre-LN)
+```mermaid
+graph TD
+    classDef blockStyle fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef opStyle fill:#0f172a,stroke:#10b981,stroke-width:1px,color:#d1d5db;
+    classDef flowStyle fill:#0f172a,stroke:#64748b,stroke-width:1px,color:#94a3b8;
+
+    Input["Block Input (h_l)"] --> PreAttnNorm["Pre-Attention Norm<br><i>(LayerNorm / RMSNorm)</i>"]
+    Input --> AddAttn(("Add Residual"))
+    
+    PreAttnNorm --> SelfAttn["Self-Attention Block<br><i>(GQA + RoPE Cache)</i>"]
+    SelfAttn --> AddAttn
+    
+    AddAttn --> PreFFNNorm["Pre-FFN Norm<br><i>(LayerNorm / RMSNorm)</i>"]
+    AddAttn --> AddFFN(("Add Residual"))
+    
+    PreFFNNorm --> FFN["Feed-Forward Network<br><i>(FFN / GLU variants)</i>"]
+    FFN --> AddFFN
+    
+    AddFFN --> Output["Block Output (h_l+1)"]
+
+    class Input,Output flowStyle;
+    class SelfAttn,FFN blockStyle;
+    class PreAttnNorm,PreFFNNorm,AddAttn,AddFFN opStyle;
 ```
 
 ---
