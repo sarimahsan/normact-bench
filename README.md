@@ -46,6 +46,57 @@ transformer_research/
 
 ---
 
+## 🧱 Model Architecture & Pipeline Flow
+
+The research framework employs a configurable, decoder-only Transformer model. Below is a generic visualization of the full network pipeline and the internal structure of each Transformer block:
+
+```mermaid
+graph TD
+    %% Global styling
+    classDef blockStyle fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef opStyle fill:#0f172a,stroke:#10b981,stroke-width:1px,color:#d1d5db;
+    classDef flowStyle fill:#0f172a,stroke:#64748b,stroke-width:1px,color:#94a3b8;
+
+    subgraph Input_Stage ["Input Stage"]
+        Tokens["Token IDs (Batch, Seq)"] --> Embed["Embedding Layer"]
+        Embed --> H0["Hidden States (h_0)"]
+    end
+
+    subgraph Transformer_Blocks ["Transformer Blocks (x N Layers)"]
+        H0 --> Block1["Transformer Block 1"]
+        Block1 --> Block2["Transformer Block 2"]
+        Block2 --> Dots["..."]
+        Dots --> BlockN["Transformer Block N (h_N)"]
+    end
+
+    subgraph Output_Stage ["Output Stage"]
+        BlockN --> FinalNorm["Final Norm (LayerNorm / RMSNorm)"]
+        FinalNorm --> LMHead["LM Head (Linear)"]
+        LMHead --> Logits["Logits (Batch, Seq, Vocab)"]
+    end
+
+    subgraph Detail_Block ["Transformer Block Detail (Pre-LN)"]
+        Input["Block Input (h_l)"] --> PreAttnNorm["Pre-Attention Normalization (LayerNorm / RMSNorm)"]
+        Input --> Residual1[("+ Add Residual")]
+        PreAttnNorm --> SelfAttn["Self-Attention (GQA + RoPE)"]
+        SelfAttn --> Residual1
+        
+        Residual1 --> PreFFNNorm["Pre-FFN Normalization (LayerNorm / RMSNorm)"]
+        Residual1 --> Residual2[("+ Add Residual")]
+        PreFFNNorm --> FFN["Feed-Forward Network (FFN / GLU variants)"]
+        FFN --> Residual2
+        
+        Residual2 --> Output["Block Output (h_l+1)"]
+    end
+
+    %% Apply Classes
+    class Tokens,Logits,H0,BlockN,Input,Output flowStyle;
+    class Embed,LMHead,SelfAttn,FFN blockStyle;
+    class FinalNorm,PreAttnNorm,PreFFNNorm,Residual1,Residual2 opStyle;
+```
+
+---
+
 ## 🛠️ Key Architectural Implementations
 
 ### 1. Factorial Design (Two-Way ANOVA)
