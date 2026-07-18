@@ -51,6 +51,5 @@ Thumbs.db
 *.docx
 *.html
 transformer_research/
-plots/
-
 gelu_layernorm_metrics_only/
+experiment_runs/

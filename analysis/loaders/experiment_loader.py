@@ -14,15 +14,17 @@ def load_experiments(results_dir):
         print(f"Results directory '{results_dir}' does not exist.")
         return runs
 
-    for config_hash in os.listdir(results_dir):
-        hash_path = os.path.join(results_dir, config_hash)
-        if not os.path.isdir(hash_path) or config_hash == "plots":
-            continue
-
-        for seed in os.listdir(hash_path):
-            seed_path = os.path.join(hash_path, seed)
-            if not os.path.isdir(seed_path):
-                continue
+    for root, dirs, files in os.walk(results_dir):
+        if "plots" in dirs:
+            dirs.remove("plots")
+            
+        seed_dirs = [d for d in dirs if d.startswith("seed")]
+        if seed_dirs:
+            config_hash = os.path.basename(root)
+            for seed in seed_dirs:
+                seed_path = os.path.join(root, seed)
+                if not os.path.isdir(seed_path):
+                    continue
 
             config_path = os.path.join(seed_path, "config.yaml")
             metrics_path = os.path.join(seed_path, "metrics.csv")
